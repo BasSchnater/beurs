@@ -30,7 +30,7 @@ import statsmodels.api as sm
 path = r'C:\Users\bassc\OneDrive\Bas\Beurs\Output' # Savepath
 
 # Timeframes bepalen
-start = "2019-01-01"
+start = "2015-01-01"
 today = str(dt.today().date())
 end = today
 
@@ -139,7 +139,7 @@ etfs = [
 #       ,'HDRO.MI'
        ]
 etf_list = []
-start = '2019-07-01'
+start = start
 for etf in etfs:
     etf = yf.download(etf, start=start, end=today)
     etf.index = etf.index.tz_localize(None)
@@ -164,6 +164,217 @@ sns.heatmap(etf_list.corr(), annot=True, cmap='RdYlGn', fmt='.2g')
 plt.savefig('ETF-correlaties.png', format='png', dpi=100, bbox_inches="tight")
 plt.show()
 
+sns.set_style('darkgrid')
+sns.set_context('paper')
+sns.set_palette('Dark2')
+boxspecs = dict(boxstyle='round', facecolor='white', alpha=0.3)
+
+# AEX fondsen
+aex_fondsen = ["BESI.AS","URW.AS","INGA.AS","AD.AS","PRX.AS","KPN.AS","ADYEN.AS","DSM.AS","WKL.AS","PHIA.AS","UNA.AS","GLPG.AS","ASM.AS","MT.AS","RAND.AS","ASML.AS","REN.AS","IMCD.AS","AKZA.AS","ASRNL.AS","NN.AS","AGN.AS","HEIA.AS"]
+amx_fondsen = ['AALB.AS', 'AF.PA','ALFEN.AS',"APAM.AS","ARCAD.AS","BAMNB.AS","BFIT.AS","CRBN.AS","ECMPA.AS","FAGR.BR","FLOW.AS","FUR.AS","JDEP.AS","NSI.AS", "OCI.AS", "PHARM.AS","PNL.AS","SBMO.AS","LIGHT.AS","ABN.AS","TWEKA.AS","VPK.AS","WDP.BR"]
+ascx_fondsen = ['AXS.AS','AJAX.AS','ACOMO.AS','AVTX.AS','BSGR.AS','BAMNB.AS','CMCOM.AS','HEIJM.AS','KENDR.AS','BOLS.AS','NEDAP.AS','NSI.AS','ORDI.AS','SIFG.AS','SLIGR.AS','TOM2.AS','VASTN.AS','WHA.AS']
+nl_aandelen = aex_fondsen + amx_fondsen + ascx_fondsen
+
+damrak = yf.download(nl_aandelen, start=start, end=today)
+damrak = damrak['Adj Close']
+damrak.index = pd.to_datetime(damrak.index.astype(str).str.slice(start=0, stop=11))
+
+import quantstats as qs
+for aandeel in nl_aandelen:
+    stock = pd.DataFrame(damrak[aandeel])
+
+    ticker = yf.Ticker(aandeel) # or pdr.get_data_yahoo(... 
+    #from pandas_datareader import data as pdr
+    #import yfinance as yf
+    #yf.pdr_override() # <== that's all it takes :-)
+    stock = pd.DataFrame(stock[aandeel].loc[start:end])
+    stock.columns = ['Close']
+    stock['Close'] = stock['Close'].bfill()
+    # Technische analyse
+    stock['20dSTD'] = stock['Close'].rolling(window=20).std()
+    stock['MA20'] = stock['Close'].rolling(window=20).mean()
+    stock['MA50'] = stock['Close'].rolling(window=50).mean()
+    stock['MA200'] = stock['Close'].rolling(window=200).mean()
+    stock['MA365'] = stock['Close'].rolling(window=365).mean()
+    stock['Upper'] = stock['MA20'] + (stock['20dSTD'] * 2)
+    stock['Lower'] = stock['MA20'] - (stock['20dSTD'] * 2)
+    # advies
+    #stock['advies'] = np.where(stock['Close'] < stock['MA200'], 'kooptip', 'neutraal')
+    #stock['advies'] = np.where((stock['Close'] > stock['MA200']) & (stock['Close'] < stock['20dSTD']), 'hoog, niet kopen', stock['advies'])
+    #stock['advies'] = np.where((stock['Close'] > stock['MA200']) & (stock['Close'] > stock['20dSTD']), 'uitgebroken, verkopen', stock['advies'])
+    
+    # Plots
+    stock['Close'].plot(label='Dagkoers', color='black', linewidth=2)
+    stock['Upper'].plot(label='Bollinger 20 2STD', color='red',linestyle='-', alpha=0.3)
+    stock['Lower'].plot(label='', color='red',linestyle='-', alpha=0.3)
+    stock['MA365'].plot(label='MA365', color='orange',linestyle='dotted')
+    stock['MA200'].plot(label='MA200', color='blue', linestyle='dotted')
+    stock['MA50'].plot(label='MA50', color='blue',)
+    stock['MA200'].plot(label='MA200', color='orange')
+    plt.title(aandeel)
+    plt.xlim(start,today)
+    plt.legend(bbox_to_anchor=(1,1))
+#    plt.text(x=stock.index.min(), y=stock['Close'].max(), s=str('Sector: ' + stock['industry'].iloc[0]), bbox=dict(facecolor='white', edgecolor='none'))
+#    plt.text(x=stock.index.min(), y=stock['Close'].max()/1.1, s=str('Groei gem.: ' + str(round(stock['avggrowth'].iloc[0],2))), bbox=dict(facecolor='white', edgecolor='none'))
+#    plt.text(x=stock.index.min(), y=stock['Close'].max()/1.2, s=str('Groei max.: ') + str(round(stock['maxgrowth'].iloc[0],2)), bbox=dict(facecolor='white', edgecolor='none'))
+#    plt.text(x=stock.index.min(), y=stock['Close'].max()/1.3, s=str('WPA: ') + str(stock['revenuePerShare'].iloc[0]), bbox=dict(facecolor='white', edgecolor='none'))
+#    plt.text(x=stock.index.min(), y=stock['Close'].max()/1.4, s=str('P/E ratio: ') + str(stock['P/E ratio'].iloc[0]), bbox=dict(facecolor='white', edgecolor='red'))    
+    #    plt.text(start,float(stock.min()), 'Source: Yahoo Finance. Graph by Bas Schnater (@BasSchnater)')
+    plt.savefig(aandeel + '.png', format='png', dpi=100, bbox_inches="tight")
+#    plt.savefig(path + redactie + '_productie.png', format='png', dpi=100, bbox_inches="tight")
+    plt.show()
+    
+    
+"""    # -- Quantstats
+    qs.extend_pandas()
+    # fetch the daily returns for a stock
+    stock = pd.Series(damrak[aandeel])
+
+    ### Plots
+    qs.plots.snapshot(stock, title='Stock Performance')
+    qs.reports.basic(stock)
+    
+    qs.reports.html(stock, benchmark='AEX.AS')
+    stock.to_plotly()
+
+    qs.reports.html(stock, output=str(stock) + '_stats.html', title='BTC Sentiment')
+    stock.plot_monthly_heatmap(savefig='output/fb_monthly_heatmap.png')
+    stock.plot_earnings(savefig='output/fb_earnings.png', start_balance=100000)""" 
+    
+"""    # Technische analyse
+    stock['20dSTD'] = stock['Close'].rolling(window=20).std()
+    stock['MA20'] = stock['Close'].rolling(window=20).mean()
+    stock['MA200'] = stock['Close'].rolling(window=200).mean()
+    stock['MA365'] = stock['Close'].rolling(window=365).mean()
+    stock['Upper'] = stock['MA20'] + (stock['20dSTD'] * 2)
+    stock['Lower'] = stock['MA20'] - (stock['20dSTD'] * 2)
+    # advies
+    #stock['advies'] = np.where(stock['Close'] < stock['MA200'], 'kooptip', 'neutraal')
+    #stock['advies'] = np.where((stock['Close'] > stock['MA200']) & (stock['Close'] < stock['20dSTD']), 'hoog, niet kopen', stock['advies'])
+    #stock['advies'] = np.where((stock['Close'] > stock['MA200']) & (stock['Close'] > stock['20dSTD']), 'uitgebroken, verkopen', stock['advies'])
+    
+    # Plots
+    stock['Close'].plot(label='Dagkoers', color='black')
+    stock['Upper'].plot(label='Upper', color='red',linestyle='-', alpha=0.3)
+    stock['Lower'].plot(label='Lower', color='red',linestyle='-', alpha=0.3)
+    stock['MA365'].plot(label='MA365', color='orange',linestyle='dotted')
+    stock['MA200'].plot(label='MA200', color='blue', linestyle='dotted')
+    plt.title(stock['name'].iloc[-1])
+    plt.xlim(start,today)
+    plt.legend(bbox_to_anchor=(1,1))
+    plt.text(x=stock.index.min(), y=stock['Close'].max(), s=str('Sector: ' + stock['industry'].iloc[0]), bbox=dict(facecolor='white', edgecolor='none'))
+    plt.text(x=stock.index.min(), y=stock['Close'].max()/1.1, s=str('Groei gem.: ' + str(round(stock['avggrowth'].iloc[0],2))), bbox=dict(facecolor='white', edgecolor='none'))
+    plt.text(x=stock.index.min(), y=stock['Close'].max()/1.2, s=str('Groei max.: ') + str(round(stock['maxgrowth'].iloc[0],2)), bbox=dict(facecolor='white', edgecolor='none'))
+    plt.text(x=stock.index.min(), y=stock['Close'].max()/1.3, s=str('WPA: ') + str(stock['revenuePerShare'].iloc[0]), bbox=dict(facecolor='white', edgecolor='none'))
+    plt.text(x=stock.index.min(), y=stock['Close'].max()/1.4, s=str('P/E ratio: ') + str(stock['P/E ratio'].iloc[0]), bbox=dict(facecolor='white', edgecolor='red'))    
+    #    plt.text(start,float(stock.min()), 'Source: Yahoo Finance. Graph by Bas Schnater (@BasSchnater)')
+    plt.savefig(r"C:\Users\bassc\OneDrive\Bas\Beurs\Output" + "_" + str(stock['name'].iloc[-1]) + '_bollinger_bands.png', format='png', dpi=100, bbox_inches="tight")
+#    plt.savefig(path + redactie + '_productie.png', format='png', dpi=100, bbox_inches="tight")
+    plt.show()
+
+# Yahoo data werkt nu niet, later weer proberen 
+damrak_lijst = []
+for aandeel in nl_aandelen:
+    stock = pd.DataFrame(damrak[aandeel])
+
+    ticker = yf.Ticker(aandeel) # or pdr.get_data_yahoo(... 
+    #from pandas_datareader import data as pdr
+    #import yfinance as yf
+    #yf.pdr_override() # <== that's all it takes :-)
+    stock = ticker.history(period='max')
+    stock = stock[['Close','Dividends']].loc[start:end]
+    stock.index = pd.to_datetime(stock.index.astype(str).str.slice(start=0, stop=11))
+    stock['ticker'] = ticker.ticker
+    stock['name'] = ticker.info['shortName']
+    stock['sector'] = ticker.info['sector']
+    stock['industry'] = ticker.info['industry']
+    stock['exchange'] = ticker.fast_info.exchange
+    
+    stock['P/E ratio'] = ticker.info['forwardPE']
+    stock['52WeekChange'] = ticker.info['52WeekChange']
+    stock['shares'] = ticker.fast_info['shares']
+    stock['revenuePerShare'] = ticker.info['revenuePerShare']
+    stock['forwardEps'] = ticker.info['forwardEps']
+    
+    # Analyst opinions
+    analists = ticker.analyst_price_target
+    stock['currentPrice'] = analists.iloc[1,0]
+    stock['targetMeanPrice'] = analists.iloc[2,0]
+    stock['avggrowth'] = stock['targetMeanPrice']/stock['currentPrice']
+    stock['targetHighPrice'] = analists.iloc[3,0]
+    stock['maxgrowth'] = stock['targetHighPrice']/stock['currentPrice']
+    
+    # Technische analyse
+    stock['20dSTD'] = stock['Close'].rolling(window=20).std()
+    stock['MA20'] = stock['Close'].rolling(window=20).mean()
+    stock['MA200'] = stock['Close'].rolling(window=200).mean()
+    stock['MA365'] = stock['Close'].rolling(window=365).mean()
+    stock['Upper'] = stock['MA20'] + (stock['20dSTD'] * 2)
+    stock['Lower'] = stock['MA20'] - (stock['20dSTD'] * 2)
+    # advies
+    #stock['advies'] = np.where(stock['Close'] < stock['MA200'], 'kooptip', 'neutraal')
+    #stock['advies'] = np.where((stock['Close'] > stock['MA200']) & (stock['Close'] < stock['20dSTD']), 'hoog, niet kopen', stock['advies'])
+    #stock['advies'] = np.where((stock['Close'] > stock['MA200']) & (stock['Close'] > stock['20dSTD']), 'uitgebroken, verkopen', stock['advies'])
+    
+    # Plots
+    stock['Close'].plot(label='Dagkoers', color='black')
+    stock['Upper'].plot(label='Upper', color='red',linestyle='-', alpha=0.3)
+    stock['Lower'].plot(label='Lower', color='red',linestyle='-', alpha=0.3)
+    stock['MA365'].plot(label='MA365', color='orange',linestyle='dotted')
+    stock['MA200'].plot(label='MA200', color='blue', linestyle='dotted')
+    plt.title(stock['name'].iloc[-1])
+    plt.xlim(start,today)
+    plt.legend(bbox_to_anchor=(1,1))
+    plt.text(x=stock.index.min(), y=stock['Close'].max(), s=str('Sector: ' + stock['industry'].iloc[0]), bbox=dict(facecolor='white', edgecolor='none'))
+    plt.text(x=stock.index.min(), y=stock['Close'].max()/1.1, s=str('Groei gem.: ' + str(round(stock['avggrowth'].iloc[0],2))), bbox=dict(facecolor='white', edgecolor='none'))
+    plt.text(x=stock.index.min(), y=stock['Close'].max()/1.2, s=str('Groei max.: ') + str(round(stock['maxgrowth'].iloc[0],2)), bbox=dict(facecolor='white', edgecolor='none'))
+    plt.text(x=stock.index.min(), y=stock['Close'].max()/1.3, s=str('WPA: ') + str(stock['revenuePerShare'].iloc[0]), bbox=dict(facecolor='white', edgecolor='none'))
+    plt.text(x=stock.index.min(), y=stock['Close'].max()/1.4, s=str('P/E ratio: ') + str(stock['P/E ratio'].iloc[0]), bbox=dict(facecolor='white', edgecolor='red'))    
+    #    plt.text(start,float(stock.min()), 'Source: Yahoo Finance. Graph by Bas Schnater (@BasSchnater)')
+    plt.savefig(r"C:\Users\bassc\OneDrive\Bas\Beurs\Output" + "_" + str(stock['name'].iloc[-1]) + '_bollinger_bands.png', format='png', dpi=100, bbox_inches="tight")
+#    plt.savefig(path + redactie + '_productie.png', format='png', dpi=100, bbox_inches="tight")
+    plt.show()
+"""
+
+
+#### Quantstats Portfolio Analytics ####
+# Documentation: https://pypi.org/project/QuantStats/
+
+# -- Setup
+import pandas as pd
+import numpy as np
+import quantstats as qs
+qs.extend_pandas()
+
+### Stocks en comparison ###
+stock_name = 'ALFEN.AS'
+stock = qs.utils.download_returns(stock_name, period="10y")
+stock = stock.rename(stock_name)
+stock.index = stock.index.tz_localize(None)
+
+stock_benchmark = 'AEX'
+benchmark = qs.utils.download_returns(stock_benchmark, period="10y")
+benchmark = benchmark.rename(stock_benchmark)
+benchmark.index = benchmark.index.tz_localize(None)
+
+### Stats
+[f for f in dir(qs.stats) if f[0] != '_'] # <-- alle beschikbare statistieken
+qs.reports.metrics(mode='full', returns=stock)
+qs.stats.sharpe(stock)
+qs.stats.smart_sharpe(stock)
+
+### Plots
+[f for f in dir(qs.plots) if f[0] != '_'] # <-- alle beschikbare statistieken
+qs.plots.snapshot(stock, title='Stock Performance')
+#qs.plots.to_plotly(fig) # <-- werkt nog niet
+qs.plots.rolling_sharpe(stock)
+
+### Reports
+qs.reports.full(stock) # Produces all plots
+stock.plot_distribution()#savefig='fb_earnings.png')#, start_balance=100)
+
+### HTML tearsheet
+qs.reports.html(stock, benchmark=(benchmark), output='output.html', download_filename=stock_name + '.html', title=stock_name)
 
 
 
