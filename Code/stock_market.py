@@ -179,7 +179,13 @@ damrak = yf.download(nl_aandelen, start=start, end=today)
 damrak = damrak['Adj Close']
 damrak.index = pd.to_datetime(damrak.index.astype(str).str.slice(start=0, stop=11))
 
+
+# -- Setup
+import pandas as pd
+import numpy as np
 import quantstats as qs
+qs.extend_pandas()
+
 for aandeel in nl_aandelen:
     stock = pd.DataFrame(damrak[aandeel])
 
@@ -223,6 +229,21 @@ for aandeel in nl_aandelen:
     plt.savefig(aandeel + '.png', format='png', dpi=100, bbox_inches="tight")
 #    plt.savefig(path + redactie + '_productie.png', format='png', dpi=100, bbox_inches="tight")
     plt.show()
+    
+    ### Stocks en comparison ###
+    stock_name = aandeel
+    stock = qs.utils.download_returns(stock_name, period="5y")
+    stock = stock.rename(stock_name)
+    stock.index = stock.index.tz_localize(None)
+
+    stock_benchmark = '^AEX'
+    benchmark = qs.utils.download_returns(stock_benchmark, period="5y")
+    benchmark = benchmark.rename(stock_benchmark)
+    benchmark.index = benchmark.index.tz_localize(None)
+
+    ### HTML tearsheet
+    qs.reports.html(stock, benchmark=(benchmark), output='output.html', download_filename=stock_name + '.html', title=stock_name)
+
     
     
 """    # -- Quantstats
@@ -352,7 +373,7 @@ stock = qs.utils.download_returns(stock_name, period="10y")
 stock = stock.rename(stock_name)
 stock.index = stock.index.tz_localize(None)
 
-stock_benchmark = 'AEX'
+stock_benchmark = '^AEX'
 benchmark = qs.utils.download_returns(stock_benchmark, period="10y")
 benchmark = benchmark.rename(stock_benchmark)
 benchmark.index = benchmark.index.tz_localize(None)
