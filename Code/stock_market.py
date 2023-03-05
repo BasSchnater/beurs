@@ -357,6 +357,10 @@ benchmark = qs.utils.download_returns(stock_benchmark, period="10y")
 benchmark = benchmark.rename(stock_benchmark)
 benchmark.index = benchmark.index.tz_localize(None)
 
+### HTML tearsheet
+qs.reports.html(stock, benchmark=(benchmark), output='output.html', download_filename=stock_name + '.html', title=stock_name)
+
+
 ### Stats
 [f for f in dir(qs.stats) if f[0] != '_'] # <-- alle beschikbare statistieken
 qs.reports.metrics(mode='full', returns=stock)
@@ -373,8 +377,7 @@ qs.plots.rolling_sharpe(stock)
 qs.reports.full(stock) # Produces all plots
 stock.plot_distribution()#savefig='fb_earnings.png')#, start_balance=100)
 
-### HTML tearsheet
-qs.reports.html(stock, benchmark=(benchmark), output='output.html', download_filename=stock_name + '.html', title=stock_name)
+
 
 
 
