@@ -1,9 +1,20 @@
-Dit is een test voor de beurscode op mijn laptop
+# Beursdata
+Deze reposity heeft als doel om de beurs te analyseren.
+Het heeft twee onderdelen:
+- Bollinger Band analyse met MA50, MA200 en MA365
+- Quantstats voor vergelijkende analyses
 
-Nog iets proberen
+# Opmerkingen
+- Yfinance heeft meer informatie maar werkt momenteel niet, dus vervangen met Quantstats
 
-Nu uiteindelijk ook dit probern 
+## Quantstats
+- Sharpe ratio: een metric die de volatiliteit vs. verwachte returns weergeeft
+--- Sharpe ratio 3+ is zeer goed
+--- Sharpe ratio 2-3 is erg goed
+--- Sharpe ratio 1-2 is goed
+--- Sharpe ratio <1 is discutabel
 
-Nu proberen om vanuit Spyder ook te werken
 
-Instructievideo: <iframe width="560" height="315" src="https://www.youtube.com/embed/RGOj5yH7evk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+## Instructievideos
+- Git en hoe github werkt: https://youtu.be/RGOj5yH7evk
+- Quantstats portfolio analytics: https://youtu.be/Dm8GaSYZPF8
