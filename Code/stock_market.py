@@ -368,10 +368,12 @@ import quantstats as qs
 qs.extend_pandas()
 
 ### Stocks en comparison ###
-stock_name = 'ALFEN.AS'
+stock_name = 'SIFG.AS'
 stock = qs.utils.download_returns(stock_name, period="10y")
 stock = stock.rename(stock_name)
 stock.index = stock.index.tz_localize(None)
+#qs.reports.html(stock, output='output.html', download_filename=stock_name + '.html', title=stock_name)
+
 
 stock_benchmark = '^AEX'
 benchmark = qs.utils.download_returns(stock_benchmark, period="10y")
