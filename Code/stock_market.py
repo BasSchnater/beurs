@@ -34,7 +34,6 @@ start = "2015-01-01"
 today = str(dt.today().date())
 end = today
 
-
 #series_code = 'DGS10'
 #data_source = 'fred'
 #start = date(1962, 1, 1)
