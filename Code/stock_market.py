@@ -367,7 +367,7 @@ import quantstats as qs
 qs.extend_pandas()
 
 ### Stocks en comparison ###
-stock_name = 'SIFG.AS'
+stock_name = 'QDV5'
 stock = qs.utils.download_returns(stock_name, period="10y")
 stock = stock.rename(stock_name)
 stock.index = stock.index.tz_localize(None)
