@@ -169,7 +169,7 @@ sns.set_palette('Dark2')
 boxspecs = dict(boxstyle='round', facecolor='white', alpha=0.3)
 
 # AEX fondsen
-aex_fondsen = ["BESI.AS","URW.AS","INGA.AS","AD.AS","PRX.AS","KPN.AS","ADYEN.AS","DSM.AS","WKL.AS","PHIA.AS","UNA.AS","GLPG.AS","ASM.AS","MT.AS","RAND.AS","ASML.AS","REN.AS","IMCD.AS","AKZA.AS","ASRNL.AS","NN.AS","AGN.AS","HEIA.AS"]
+aex_fondsen = ["BESI.AS","INGA.AS","AD.AS","PRX.AS","KPN.AS","ADYEN.AS","DSM.AS","WKL.AS","PHIA.AS","UNA.AS","GLPG.AS","ASM.AS","MT.AS","RAND.AS","ASML.AS","REN.AS","IMCD.AS","AKZA.AS","ASRNL.AS","NN.AS","AGN.AS","HEIA.AS"]
 amx_fondsen = ['AALB.AS', 'AF.PA','ALFEN.AS',"APAM.AS","ARCAD.AS","BAMNB.AS","BFIT.AS","CRBN.AS","ECMPA.AS","FAGR.BR","FLOW.AS","FUR.AS","JDEP.AS","NSI.AS", "OCI.AS", "PHARM.AS","PNL.AS","SBMO.AS","LIGHT.AS","ABN.AS","TWEKA.AS","VPK.AS","WDP.BR"]
 ascx_fondsen = ['AXS.AS','AJAX.AS','ACOMO.AS','AVTX.AS','BSGR.AS','BAMNB.AS','CMCOM.AS','HEIJM.AS','KENDR.AS','BOLS.AS','NEDAP.AS','NSI.AS','ORDI.AS','SIFG.AS','SLIGR.AS','TOM2.AS','VASTN.AS','WHA.AS']
 nl_aandelen = aex_fondsen + amx_fondsen + ascx_fondsen
@@ -184,6 +184,8 @@ import pandas as pd
 import numpy as np
 import quantstats as qs
 qs.extend_pandas()
+
+start = '2018-01-01'
 
 for aandeel in nl_aandelen:
     stock = pd.DataFrame(damrak[aandeel])
