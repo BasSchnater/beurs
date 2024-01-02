@@ -34,6 +34,8 @@ start = "2015-01-01"
 today = str(dt.today().date())
 end = today
 
+etf_port = ['ECAR.MI','QDV5.DE','SMH.MI','NUKL.DE','VHYL.AS','VWRL.AS']
+
 #series_code = 'DGS10'
 #data_source = 'fred'
 #start = date(1962, 1, 1)
@@ -130,30 +132,25 @@ bitcoin.plot(title='Koers Bitcoin')
 plt.show()
 
 ### ETF Trackers ###
-etfs = [
-       "ECAR.MI","IQQH.DE",'QDVE.DE','TRET.MI','VWRL.AS', "SMH.MI", "REMX.MI"
-#        'REMX.MI'#,
-#       'SMH.MI'#,
-#       'HTMW.DE'
-#       ,'HDRO.MI'
-       ]
+etfs = ["ECAR.MI","IQQH.DE",'QDVE.DE','TRET.MI','VWRL.AS', "SMH.MI", "REMX.MI",'HDRO.MI','QDV5.DE','NUKL.DE', 'VHYL.AS'] + etf_port
+etfs = [*set(etfs)]
 etf_list = []
 start = start
 for etf in etfs:
-    etf = yf.download(etf, start=start, end=today)
-    etf.index = etf.index.tz_localize(None)
-    etf = etf['Adj Close'] # Volume is wel interessant
-    etf_list.append(etf)
+#    etf = 'ECAR.MI'
+    df = yf.download(etf, start=start, end=today)
+    df = pd.DataFrame(df['Adj Close']) # Volume is wel interessant
+    df = df.rename(columns={'Adj Close':etf}) 
+    df = df.div(df.iloc[0]).mul(100)
+    df = df.tz_convert(None)
+    df.index = df.index.normalize()
+    etf_list.append(df)
 etf_list = pd.concat(etf_list, axis=1)
-etf_list.columns = etfs
 
-# Visualisatie ETFs
-etf_list = etf_list.div(etf_list.iloc[1]).mul(100)
-etf_list = etf_list.iloc[1:,:]
-
-etf_list.bfill().rolling(14).mean().plot(title='ETFs vanaf ' + str(etf_list.index.min()), figsize=(15,10))
-plt.legend(bbox_to_anchor=(1,1))
-plt.xlim(start,today)
+fig, ax0 = plt.subplots(nrows=1, ncols=1, sharex=True, sharey=True, figsize=(15,10))
+etf_list.plot(ax=ax0)
+etf_list[etf_port].plot(ax=ax0, linewidth=5)
+plt.xlim('2020-01-01',today)
 plt.savefig('ETF-koersen.png', format='png', dpi=100, bbox_inches="tight")
 plt.show()
 
@@ -169,7 +166,7 @@ sns.set_palette('Dark2')
 boxspecs = dict(boxstyle='round', facecolor='white', alpha=0.3)
 
 # AEX fondsen
-aex_fondsen = ["BESI.AS","INGA.AS","AD.AS","PRX.AS","KPN.AS","ADYEN.AS","DSM.AS","WKL.AS","PHIA.AS","UNA.AS","GLPG.AS","ASM.AS","MT.AS","RAND.AS","ASML.AS","REN.AS","IMCD.AS","AKZA.AS","ASRNL.AS","NN.AS","AGN.AS","HEIA.AS"]
+aex_fondsen = ["BESI.AS","INGA.AS","AD.AS","PRX.AS","KPN.AS","ADYEN.AS","WKL.AS","PHIA.AS","UNA.AS","GLPG.AS","ASM.AS","MT.AS","RAND.AS","ASML.AS","REN.AS","IMCD.AS","AKZA.AS","ASRNL.AS","NN.AS","AGN.AS","HEIA.AS"]
 amx_fondsen = ['AALB.AS', 'AF.PA','ALFEN.AS',"APAM.AS","ARCAD.AS","BAMNB.AS","BFIT.AS","CRBN.AS","ECMPA.AS","FAGR.BR","FLOW.AS","FUR.AS","JDEP.AS","NSI.AS", "OCI.AS", "PHARM.AS","PNL.AS","SBMO.AS","LIGHT.AS","ABN.AS","TWEKA.AS","VPK.AS","WDP.BR"]
 ascx_fondsen = ['AXS.AS','AJAX.AS','ACOMO.AS','AVTX.AS','BSGR.AS','BAMNB.AS','CMCOM.AS','HEIJM.AS','KENDR.AS','BOLS.AS','NEDAP.AS','NSI.AS','ORDI.AS','SIFG.AS','SLIGR.AS','TOM2.AS','VASTN.AS','WHA.AS']
 nl_aandelen = aex_fondsen + amx_fondsen + ascx_fondsen
@@ -177,7 +174,6 @@ nl_aandelen = aex_fondsen + amx_fondsen + ascx_fondsen
 damrak = yf.download(nl_aandelen, start=start, end=today)
 damrak = damrak['Adj Close']
 damrak.index = pd.to_datetime(damrak.index.astype(str).str.slice(start=0, stop=11))
-
 
 # -- Setup
 import pandas as pd
@@ -245,7 +241,8 @@ for aandeel in nl_aandelen:
     ### HTML tearsheet
     qs.reports.html(stock, benchmark=(benchmark), output='output.html', download_filename=stock_name + '.html', title=stock_name)
 
-    
+  
+  
     
 """    # -- Quantstats
     qs.extend_pandas()
@@ -369,12 +366,11 @@ import quantstats as qs
 qs.extend_pandas()
 
 ### Stocks en comparison ###
-stock_name = 'QDV5'
+stock_name = 'QDV5.DE'
 stock = qs.utils.download_returns(stock_name, period="10y")
 stock = stock.rename(stock_name)
 stock.index = stock.index.tz_localize(None)
 #qs.reports.html(stock, output='output.html', download_filename=stock_name + '.html', title=stock_name)
-
 
 stock_benchmark = '^AEX'
 benchmark = qs.utils.download_returns(stock_benchmark, period="10y")
