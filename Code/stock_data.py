@@ -115,12 +115,11 @@ stocks_nl = pd.concat([aex_fondsen, amx_fondsen], axis=1)
 stocks_nl = stocks_nl.sort_index(axis=1)
 stocks_nl = stocks_nl.loc[:,~stocks_nl.columns.duplicated()].copy()
 
-# Download andere aandelen
-stocks_int = ['NKE','AAPL','MSFT','INTC','NVDA']
+# Download andere aandelent
+stocks_int = ['NKE','AAPL','MSFT','INTC','NVDA','META','TSLA','GOOG','TSM']
 stocks_int = yf.download(stocks_int, start=start, end=today)
 stocks_int = stocks_int['Adj Close']
 stocks_int = stocks_int.sort_index(axis=1)
-
 
 # ================================== BASIS VISUALISATIES ============================================
 
@@ -193,6 +192,7 @@ nl_aandelen_namen = aex_namen + amx_namen
 nlse_aandelen = []
 columns = []
 adviezen = []
+offset = 50
 
 import yfinance as yf
 import quantstats as qs
@@ -225,12 +225,16 @@ for aandeel in nl_aandelen_namen:
     stock['P/E ratio'] = park.info['forwardPE']
     if 'ebitda' in park.info:
         stock['ebitda'] = park.info['ebitda'] 
-    stock['ebitdaMargins'] = park.info['ebitdaMargins']
+    if 'ebitdaMargins' in park.info:
+        stock['ebitdaMargins'] = park.info['ebitdaMargins']
     if 'dividendRate' in park.info:
         stock['dividendRate'] = park.info['dividendRate']
-    stock['payoutRatio'] = park.info['payoutRatio']
-    stock['profitmargin'] = park.info['profitMargins']
-    stock['operatingMargins'] = park.info['operatingMargins']
+    if 'payoutRatio' in park.info:
+        stock['payoutRatio'] = park.info['payoutRatio']
+    if 'profitmargin' in park.info:
+        stock['profitmargin'] = park.info['profitMargins']
+    if 'operatingMargins' in park.info:
+        stock['operatingMargins'] = park.info['operatingMargins']
     if 'earningsQuarterlyGrowth' in park.info:
         stock['earningsQuarterlyGrowth'] = park.info['earningsQuarterlyGrowth']
     stock['targetLowPrice'] = park.info['targetLowPrice']
@@ -258,8 +262,8 @@ for aandeel in nl_aandelen_namen:
 #    stock['Upper'].plot(label='Upper', color='red',linestyle='-', alpha=0.3)
 #    stock['Lower'].plot(label='Lower', color='red',linestyle='-', alpha=0.3)
     stock['MA365'].plot(label='MA365', color='orange',linestyle='dotted')
-    stock['MA200'].plot(label='MA200', color='blue', linestyle='dotted')
-    stock['MA50'].plot(label='MA50', color='red', linestyle='dashed')
+    stock['MA200'].plot(label='MA200', color='red', linestyle='dotted')
+    stock['MA50'].plot(label='MA50', color='blue', linewidth=2)
     plt.axhline(y=park.info['targetLowPrice'], label='targetMeanPrice', color='grey', linestyle='dotted')
     plt.axhline(y=park.info['targetMedianPrice'], label='targetMedianPrice', color='grey', linestyle='dotted')
     plt.axhline(y=park.info['targetHighPrice'], label='targetHighPrice', color='grey', linestyle='dotted')
@@ -270,8 +274,8 @@ for aandeel in nl_aandelen_namen:
     plt.xlim(start,today)
     plt.legend(bbox_to_anchor=(0.3,1))
     # Algemene info
-    plt.text(x=stock.index.max(), y=stock['Adj Close'].max(), s=str('Sector: ' + park.info['sector']), bbox=dict(facecolor='white', edgecolor='none'))
-    plt.text(x=stock.index.max(), y=stock['Adj Close'].max()*0.9, s=str('Industry: ' + park.info['industry']), bbox=dict(facecolor='white', edgecolor='none'))
+    plt.text(x=stock.index.max()+pd.DateOffset(offset), y=stock['Adj Close'].max(), s=str('Sector: ' + park.info['sector']), bbox=dict(facecolor='white', edgecolor='none'))
+    plt.text(x=stock.index.max()+pd.DateOffset(offset), y=stock['Adj Close'].max()*0.9, s=str('Industry: ' + park.info['industry']), bbox=dict(facecolor='white', edgecolor='none'))
     # Belangrijke metrics
     if 'earningsQuarterlyGrowth' in park.info:  
         if park.info['earningsQuarterlyGrowth'] > 0.1:
@@ -280,7 +284,7 @@ for aandeel in nl_aandelen_namen:
             color = 'red'
         else: 
             color = 'none'
-        plt.text(x=stock.index.max(), y=stock['Adj Close'].max()*0.8, s=str('Earnings quarterly growth: ') + str(np.round(park.info['earningsQuarterlyGrowth']*100)) + '%', bbox=dict(facecolor='white', edgecolor=color))
+        plt.text(x=stock.index.max()+pd.DateOffset(offset), y=stock['Adj Close'].max()*0.8, s=str('Earnings quarterly growth: ') + str(np.round(park.info['earningsQuarterlyGrowth']*100)) + '%', bbox=dict(facecolor='white', edgecolor=color))
     # Koers/winst verhouding (Price/Profit P/E)
     if park.info['forwardPE'] > 30:
         color = 'red'
@@ -288,15 +292,16 @@ for aandeel in nl_aandelen_namen:
         color = 'green'
     else: 
         color = 'orange'
-    plt.text(x=stock.index.max(), y=stock['Adj Close'].max()*0.7, s=str('K/W P/E ratio: ') + str(np.round(park.info['forwardPE'])), bbox=dict(facecolor='white', edgecolor=color))
+    plt.text(x=stock.index.max()+pd.DateOffset(offset), y=stock['Adj Close'].max()*0.7, s=str('K/W P/E ratio: ') + str(np.round(park.info['forwardPE'])), bbox=dict(facecolor='white', edgecolor=color))
     # EBITDA margins
-    if park.info['ebitdaMargins'] > 0.1:
-        color = 'green'
-    elif park.info['ebitdaMargins'] < 0:
-        color = 'red'
-    else: 
-        color = 'none'
-    plt.text(x=stock.index.max(), y=stock['Adj Close'].max()*0.6, s=str('EBITDA margin: ') + str(np.round(park.info['ebitdaMargins']*100)) + '%', bbox=dict(facecolor='white', edgecolor=color))
+    if 'ebitdaMargins' in park.info: 
+        if park.info['ebitdaMargins'] > 0.1:
+            color = 'green'
+        elif park.info['ebitdaMargins'] < 0:
+            color = 'red'
+        else: 
+            color = 'none'
+        plt.text(x=stock.index.max()+pd.DateOffset(offset), y=stock['Adj Close'].max()*0.6, s=str('EBITDA margin: ') + str(np.round(park.info['ebitdaMargins']*100)) + '%', bbox=dict(facecolor='white', edgecolor=color))
     #Operating margin
     if park.info['operatingMargins'] > 0.1:
         color = 'green'
@@ -304,7 +309,7 @@ for aandeel in nl_aandelen_namen:
         color = 'red'
     else: 
         color = 'none'
-    plt.text(x=stock.index.max(), y=stock['Adj Close'].max()*0.5, s=str('operating margin: ') + str(np.round(park.info['operatingMargins']*100)) + '%', bbox=dict(facecolor='white', edgecolor=color))
+    plt.text(x=stock.index.max()+pd.DateOffset(offset), y=stock['Adj Close'].max()*0.5, s=str('operating margin: ') + str(np.round(park.info['operatingMargins']*100)) + '%', bbox=dict(facecolor='white', edgecolor=color))
     # Dividend rate
     if 'dividendRate' in park.info:    
         if park.info['dividendRate'] > 5:
@@ -313,7 +318,7 @@ for aandeel in nl_aandelen_namen:
             color = 'red'
         else: 
             color = 'none'        
-        plt.text(x=stock.index.max(), y=stock['Adj Close'].max()*0.4, s=str('dividend per share: ') + str(park.info['dividendRate']) + '€', bbox=dict(facecolor='white', edgecolor=color))    
+        plt.text(x=stock.index.max()+pd.DateOffset(offset), y=stock['Adj Close'].max()*0.4, s=str('dividend per share: ') + str(park.info['dividendRate']) + '€', bbox=dict(facecolor='white', edgecolor=color))    
     # Analyst valuations
     if 'recommendationMean' or 'numberOfAnalystOpinions' in park.info:
         if park.info['numberOfAnalystOpinions'] > 10:
@@ -325,8 +330,8 @@ for aandeel in nl_aandelen_namen:
                     color = 'green'
                 else: 
                     color = 'none'
-                plt.text(x=stock.index.max(), y=stock['Adj Close'].max()*0.3, s=str('Advies (1=hoog): ' + str(park.info['recommendationMean'])), bbox=dict(facecolor='white', edgecolor=color))
-                plt.text(x=stock.index.max(), y=stock['Adj Close'].max()*0.2, s=str('Advies: ' + park.info['recommendationKey']), bbox=dict(facecolor='white', edgecolor='none'))
+                plt.text(x=stock.index.max()+pd.DateOffset(offset), y=stock['Adj Close'].max()*0.3, s=str('Advies (1=hoog): ' + str(park.info['recommendationMean'])), bbox=dict(facecolor='white', edgecolor=color))
+                plt.text(x=stock.index.max()+pd.DateOffset(offset), y=stock['Adj Close'].max()*0.2, s=str('Advies: ' + park.info['recommendationKey']), bbox=dict(facecolor='white', edgecolor='none'))
 #    plt.text(start,float(stock.min()), 'Source: Yahoo Finance. Graph by Bas Schnater (@BasSchnater)')
     plt.legend(loc='upper left', facecolor='white')
     plt.savefig(r'C:\Users\bassc\OneDrive\Bas\Beurs\Output' + '_' + aandeel + '_bollinger_bands.png', format='png', dpi=100, bbox_inches="tight")
@@ -354,7 +359,7 @@ totaal.columns = nl_aandelen_namen
 
 # Groei aandelen over tijd
 stock_indexed = totaal.pct_change().fillna(0).add(1).cumprod()-1
-stock_indexed.rolling(14).mean().plot(title='ETFs vanaf ' + str(etf_indexed.index.min()), figsize=(15,10))
+stock_indexed.rolling(14).mean().plot(title='Stocks vanaf ' + str(stock_indexed.index.min()), figsize=(15,10))
 plt.legend(bbox_to_anchor=(1,1))
 plt.xlim(start,today)
 plt.savefig('stocks_indexed.png', format='png', dpi=100, bbox_inches="tight")
