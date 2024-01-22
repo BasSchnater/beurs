@@ -199,7 +199,7 @@ import quantstats as qs
 qs.extend_pandas()
 #nl_aandelen = ['ASM.AS','ASML.AS', 'BESI.AS']
 nl_aandelen_namen = nl_aandelen_namen + list(stocks_int.columns)
-aandeel = 'ASML.AS'
+#aandeel = 'ASML.AS'
 for aandeel in nl_aandelen_namen:
     stock = yf.download(aandeel, start=start, end=today)
     stock = pd.DataFrame(stock['Adj Close'])
@@ -219,10 +219,14 @@ for aandeel in nl_aandelen_namen:
     stock['industry'] = park.info['industry']
     industry = park.info['industry']
     stock['analystRecommendation'] = park.info['recommendationKey']
-    stock['analystscore'] = park.info['recommendationMean']
-    stock['revenuePerShare'] = park.info['revenuePerShare']
-    stock['forwardEps'] = park.info['forwardEps']
-    stock['P/E ratio'] = park.info['forwardPE']
+    if 'analystscore' in park.info:  
+        stock['analystscore'] = park.info['recommendationMean']
+    if 'revenuePerShare' in park.info:
+        stock['revenuePerShare'] = park.info['revenuePerShare']
+    if 'forwardEps' in park.info:
+        stock['forwardEps'] = park.info['forwardEps']
+    if 'P/E ratio' in park.info:
+        stock['P/E ratio'] = park.info['forwardPE']
     if 'ebitda' in park.info:
         stock['ebitda'] = park.info['ebitda'] 
     if 'ebitdaMargins' in park.info:
@@ -263,7 +267,7 @@ for aandeel in nl_aandelen_namen:
 #    https://coderzcolumn.com/tutorials/data-science/candlestick-chart-in-python-mplfinance-plotly-bokeh#1
     
     # Plots
-    stock['Adj Close'].plot(label='Dagkoers', color='grey')
+    stock['Adj Close'].plot(label='Dagkoers', color='black')
     stock['Upper'].plot(label='Upper', color='orange',linestyle='-', alpha=0.3)
     stock['Lower'].plot(label='Lower', color='orange',linestyle='-', alpha=0.3)
 #    stock['SMA365'].plot(label='MA365', color='orange',linestyle='dotted')
