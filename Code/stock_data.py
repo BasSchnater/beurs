@@ -171,7 +171,11 @@ etf_list.columns = etfs
 
 # Visualisatie ETFs
 etf_indexed = etf_list.pct_change().fillna(0).add(1).cumprod().mul(100)
-etf_indexed.rolling(14).mean().plot(title='ETFs vanaf ' + str(etf_indexed.index.min()), figsize=(15,10))
+
+fig, ax = plt.subplots()
+etf_indexed.rolling(14).mean().plot(alpha=0.5, ax=ax)
+etf_indexed[["QDV5.DE","SMH.MI","NUKL.DE","VWRL.AS"]].rolling(14).mean().plot(linewidth=2, ax=ax)
+plt.title('ETFs vanaf ' + start)
 plt.legend(bbox_to_anchor=(1,1))
 plt.xlim(start,today)
 plt.savefig('ETF-koersen_indexed.png', format='png', dpi=100, bbox_inches="tight")
@@ -370,11 +374,16 @@ totaal.columns = nl_aandelen_namen
 
 # Groei aandelen over tijd
 stock_indexed = totaal.pct_change().fillna(0).add(1).cumprod()-1
-stock_indexed.rolling(14).mean().plot(title='Stocks vanaf ' + str(stock_indexed.index.min()), figsize=(15,10))
-plt.legend(bbox_to_anchor=(1,1))
+
+fig, ax = plt.subplots()
+stock_indexed.rolling(14).mean().plot(ax=ax, legend=None, color='grey')
+stock_indexed[['NVDA','TSM','MSFT','ASML.AS','ALFEN.AS']].rolling(14).mean().plot(ax=ax, linewidth=2)
+plt.title(label='Stocks vanaf ' + str(stock_indexed.index.min()))
+#plt.legend(bbox_to_anchor=(1,1))
 plt.xlim(start,today)
 plt.savefig('stocks_indexed.png', format='png', dpi=100, bbox_inches="tight")
 plt.show()
+
 print(stock_indexed.iloc[-1].T.nlargest(15))
 print(stock_indexed.iloc[-1].T.nsmallest(15))
 
