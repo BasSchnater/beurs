@@ -376,7 +376,7 @@ totaal.columns = nl_aandelen_namen
 stock_indexed = totaal.pct_change().fillna(0).add(1).cumprod()-1
 
 fig, ax = plt.subplots()
-stock_indexed.rolling(14).mean().plot(ax=ax, legend=None, color='grey')
+stock_indexed.rolling(14).mean().plot(ax=ax, legend=None, color='grey', alpha=0.5)
 stock_indexed[['NVDA','TSM','MSFT','ASML.AS','ALFEN.AS']].rolling(14).mean().plot(ax=ax, linewidth=2)
 plt.title(label='Stocks vanaf ' + str(stock_indexed.index.min()))
 #plt.legend(bbox_to_anchor=(1,1))
