@@ -151,6 +151,7 @@ bitcoin = yf.download("BTC-USD", start=start, end=today)
 #bitcoin = bitcoin.div(bitcoin.iloc[0]).mul(100)
 bitcoin = bitcoin['Adj Close']
 bitcoin.plot(title='Koers Bitcoin')
+plt.savefig('bitcoin.png', format='png', dpi=100, bbox_inches="tight")
 plt.show()
 
 ### ETF Trackers ###
@@ -394,6 +395,7 @@ adviezen_totaal.columns = nl_aandelen_namen
 adviezen_totaal = adviezen_totaal.iloc[-1]
 print(adviezen_totaal.nlargest(50))
 
+print(stock_indexed.iloc[-1].nlargest(10).T)
 
 # Alles hieronder moet opnieuw geschreven worden
 
