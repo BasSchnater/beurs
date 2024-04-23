@@ -385,8 +385,8 @@ plt.xlim(start,today)
 plt.savefig('stocks_indexed.png', format='png', dpi=100, bbox_inches="tight")
 plt.show()
 
-print(stock_indexed.iloc[-1].T.nlargest(15))
-print(stock_indexed.iloc[-1].T.nsmallest(15))
+print("Top 15 stijgers sinds 2019: ",stock_indexed.iloc[-1].T.nlargest(15))
+print("Top 15 dalers sinds 2019: ",stock_indexed.iloc[-1].T.nsmallest(15))
 
 # Adviezen
 adviezen_totaal = pd.concat(nlse_aandelen, axis=1)
@@ -394,8 +394,6 @@ adviezen_totaal = adviezen_totaal['analystscore']
 adviezen_totaal.columns = nl_aandelen_namen
 adviezen_totaal = adviezen_totaal.iloc[-1]
 print(adviezen_totaal.nlargest(50))
-
-print(stock_indexed.iloc[-1].nlargest(10).T)
 
 # Alles hieronder moet opnieuw geschreven worden
 
